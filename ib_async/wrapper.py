@@ -770,7 +770,7 @@ class Wrapper:
                 dataclassUpdate(trade.orderStatus, **new)
                 msg = ""
             elif (
-                status == "Submitted"
+                (status == "Submitted" or status == "PreSubmitted")
                 and trade.log
                 and trade.log[-1].message == "Modify"
             ):
