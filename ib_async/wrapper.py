@@ -1658,7 +1658,13 @@ class Wrapper:
                 #  - new order is REJECTED
                 #  - existing order is server-canceled (DAY orders, margin problems)
                 #  - modification to *existing* order just has an update error, but the order is STILL LIVE
-                if not trade.isDone():
+                #
+                # Error 10148 rejects the cancellation request; it does not confirm cancellation of the order
+                # we've observed this with Cancelled, Filled, PendingCancel, and PendingSubmit
+                # - Cancelled/Filled are already protected by trade.isDone()
+                # - PendingCancel/PendingSubmit must remain unresolved until IB confirms the outcome
+                #   marking them Cancelled would let callers act on a cancellation that hasn't been confirmed
+                if errorCode != 10148 and not trade.isDone():
                     status = trade.orderStatus.status = OrderStatus.Cancelled
                     logEntry = TradeLogEntry(self.lastTime, status, msg, errorCode)
                     trade.log.append(logEntry)
